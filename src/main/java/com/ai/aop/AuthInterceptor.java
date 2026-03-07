@@ -48,9 +48,20 @@ public class AuthInterceptor {
         if (userRoleEnum == null) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
-        // 要求必须有管理员权限，但用户没有管理员权限，拒绝
-        if (UserRoleEnum.ADMIN.equals(mustRoleEnum) && !UserRoleEnum.ADMIN.equals(userRoleEnum)) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        // ... existing code ...
+        // 要求必须有管理员权限，但用户没有管理员或高级管理员权限，拒绝
+        if (UserRoleEnum.ADMIN.equals(mustRoleEnum)) {
+            boolean hasAdminPermission = UserRoleEnum.ADMIN.equals(userRoleEnum) ||
+                    UserRoleEnum.ADMINISTRATOR.equals(userRoleEnum);
+            if (!hasAdminPermission) {
+                throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+            }
+        }
+        // 要求必须有高级管理员权限，但用户没有高级管理员权限，拒绝
+        if(UserRoleEnum.ADMINISTRATOR.equals(mustRoleEnum)){
+            if(!UserRoleEnum.ADMINISTRATOR.equals(userRoleEnum)){
+                throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+            }
         }
         // 通过权限校验，放行
         return joinPoint.proceed();
