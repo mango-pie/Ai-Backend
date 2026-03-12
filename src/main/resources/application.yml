@@ -6,24 +6,41 @@ spring:
     url: jdbc:mysql://localhost:3306/aiscene
     username: root
     password: root
+
 server:
   port: 8123
   servlet:
     context-path: /api
 
+# springdoc 配置（顶层）
+springdoc:
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.ai.controller
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
 
+# knife4j 配置（顶层）
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
 
-    # springdoc-openapi????
-    springdoc:
-      group-configs:
-        - group: 'default'
-          paths-to-match: '/**'
-          packages-to-scan: com.ai.controller
-    # knife4j???????????????
-    knife4j:
-      enable: true
-      setting:
-        language: zh_cn
+# AI 配置
+langchain4j:
+  open-ai:
+    streaming-chat-model:
+      base-url: https://api.deepseek.com
+      api-key: sk-d693c15ca50c4df7a256a27651ade1f6              # 请填写实际的 API Key
+      model-name: deepseek-chat
+      max-tokens: 8192
+      log-requests: true
+      log-responses: true
 
 
 
