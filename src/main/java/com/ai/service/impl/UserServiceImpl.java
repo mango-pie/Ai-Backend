@@ -3,6 +3,7 @@ package com.ai.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.ai.constant.UserConstant;
 import com.ai.exception.BusinessException;
 import com.ai.exception.ErrorCode;
 import com.ai.model.dto.user.UserQueryRequest;
@@ -199,5 +200,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
                 .like("userProfile", userProfile)
                 .orderBy(sortField, "ascend".equals(sortOrder));
     }
-
+    // 在 UserServiceImpl 类中添加 isAdmin 方法实现
+    @Override
+    public boolean isAdmin(User user) {
+        return user != null && UserConstant.ADMIN_ROLE.equals(user.getUserRole());
+    }
 }
