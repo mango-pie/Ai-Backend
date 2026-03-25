@@ -48,7 +48,6 @@ public class AuthInterceptor {
         if (userRoleEnum == null) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
-        // ... existing code ...
         // 要求必须有管理员权限，但用户没有管理员或高级管理员权限，拒绝
         if (UserRoleEnum.ADMIN.equals(mustRoleEnum)) {
             boolean hasAdminPermission = UserRoleEnum.ADMIN.equals(userRoleEnum) ||

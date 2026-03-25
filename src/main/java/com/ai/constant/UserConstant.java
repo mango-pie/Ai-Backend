@@ -23,5 +23,4 @@ public interface UserConstant {
      * 高级管理员角色
      */
     String ADMINISTRATOR_ROLE = "administrator";
-    // endregion
 }

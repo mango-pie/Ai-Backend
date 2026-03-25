@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 /**
  * 对话历史查询请求
  *
- * @author <a href="https://github.com/liyupi">scene</a>
  */
 @EqualsAndHashCode(callSuper = true)
 @Data

@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 /**
  * 对话历史VO
  *
- * @author <a href="https://github.com/liyupi">scene</a>
  */
 @Data
 public class ChatHistoryVO implements Serializable {

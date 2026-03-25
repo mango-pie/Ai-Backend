@@ -2,7 +2,9 @@ package com.ai.service;
 
 import com.ai.model.ai.HtmlCodeResult;
 import com.ai.model.ai.MultiFileCodeResult;
+import dev.langchain4j.service.MemoryId;
 import dev.langchain4j.service.SystemMessage;
+import dev.langchain4j.service.UserMessage;
 import reactor.core.publisher.Flux;
 
 public interface AiCodeGeneratorService {
@@ -14,8 +16,11 @@ public interface AiCodeGeneratorService {
      * @param userMessage 用户消息
      * @return 生成的代码结果
      */
+//    @SystemMessage(fromResource = "prompt/codegen-html-system-prompt.txt")
+//    HtmlCodeResult generateHtmlCode(String userMessage);
     @SystemMessage(fromResource = "prompt/codegen-html-system-prompt.txt")
     HtmlCodeResult generateHtmlCode(String userMessage);
+
 
     /**
      * 生成多文件代码

@@ -1,5 +1,6 @@
 package com.ai.core;
 
+import com.ai.config.factory.AiCodeGeneratorServiceFactory;
 import com.ai.core.parser.CodeParserExecutor;
 import com.ai.exception.BusinessException;
 import com.ai.exception.ErrorCode;
@@ -25,11 +26,14 @@ import java.io.File;
 @Service
 public class AiCodeGeneratorFacade {
 
-    @Resource
-    private AiCodeGeneratorService aiCodeGeneratorService;
     @Autowired
     private SpringDocParameterNameDiscoverer localSpringDocParameterNameDiscoverer;
 
+    @Resource
+    private AiCodeGeneratorServiceFactory aiCodeGeneratorServiceFactory;
+
+    // 根据 appId 获取对应的 AI 服务实例
+    AiCodeGeneratorService aiCodeGeneratorService;
 
     /**
      * 生成 HTML 模式的代码并保存
@@ -147,10 +151,12 @@ public class AiCodeGeneratorFacade {
      * @return 保存的目录
      */
     public File generateAndSaveCode(String userMessage, CodeGenTypeEnum codeGenTypeEnum, Long appId) {
+        aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiCodeGeneratorService(appId);
         if (codeGenTypeEnum == null) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "生成类型为空");
         }
         return switch (codeGenTypeEnum) {
+
             case HTML -> {
                 HtmlCodeResult result = aiCodeGeneratorService.generateHtmlCode(userMessage);
                 yield CodeFileSaverExecutor.executeSaver(result, CodeGenTypeEnum.HTML, appId);
@@ -173,6 +179,7 @@ public class AiCodeGeneratorFacade {
      * @param codeGenTypeEnum 生成类型
      */
     public Flux<String> generateAndSaveCodeStream(String userMessage, CodeGenTypeEnum codeGenTypeEnum, Long appId) {
+        aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiCodeGeneratorService(appId);
         if (codeGenTypeEnum == null) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "生成类型为空");
         }

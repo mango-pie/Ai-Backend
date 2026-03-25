@@ -5,7 +5,6 @@ import lombok.Getter;
 /**
  * 消息类型枚举
  *
- * @author <a href="https://github.com/liyupi">scene</a>
  */
 @Getter
 public enum MessageTypeEnum {

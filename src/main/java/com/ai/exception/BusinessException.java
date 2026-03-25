@@ -5,7 +5,6 @@ import lombok.Getter;
 //全局异常处理类
 @Getter
 public class BusinessException extends RuntimeException {
-
     /**
      * 错误码
      */

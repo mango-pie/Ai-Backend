@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 /**
  * 应用 服务实现层。
  *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
  */
 @Service
 public class AppServiceImpl extends ServiceImpl<com.ai.mapper.AppMapper, App> implements AppService {

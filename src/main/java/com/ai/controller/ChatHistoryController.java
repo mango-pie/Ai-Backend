@@ -20,7 +20,6 @@ import java.util.List;
 /**
  * 对话历史 控制层。
  *
- * @author <a href="https://github.com/liyupi">scene</a>
  */
 @RestController
 @RequestMapping("/chatHistory")
