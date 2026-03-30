@@ -50,7 +50,7 @@ langchain4j:
   open-ai:
     streaming-chat-model:
       base-url: https://api.deepseek.com
-      api-key: sk-d693c15ca50c4df7a256a27651ade1f6
+      api-key: your key
       model-name: deepseek-chat
       max-tokens: 8192
       log-requests: true
