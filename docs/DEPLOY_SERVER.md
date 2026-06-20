@@ -14,7 +14,7 @@
 
 ```bash
 export SERVER_IP="121.43.177.236"    # 你的公网 IP
-export DEPLOY_USER="ubuntu"          # SSH 登录用户
+export DEPLOY_USER="root"          # SSH 登录用户
 export APP_ROOT="/opt/ai-backend"
 export WEB_ROOT="/var/www/ai-frontend"
 export DB_NAME="aiscene"
