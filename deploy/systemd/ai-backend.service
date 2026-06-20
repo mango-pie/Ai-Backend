@@ -1,0 +1,23 @@
+[Unit]
+Description=AI Scene Backend (Spring Boot)
+After=network.target mysql.service
+Wants=mysql.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/ai-backend
+EnvironmentFile=/etc/ai-backend.env
+ExecStart=/usr/bin/java -Xms256m -Xmx512m -jar /opt/ai-backend/AI-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ai-backend
+
+# 资源限制（2GB 服务器）
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
