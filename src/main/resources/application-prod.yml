@@ -1,0 +1,38 @@
+# 生产环境：java -jar app.jar --spring.profiles.active=prod
+# 敏感项通过环境变量注入，见 DEPLOY.md
+
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/aiscene?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: ${DB_USER:aiscene}
+    password: ${DB_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+
+upload:
+  path: /app/uploads/
+  base-url: ${UPLOAD_BASE_URL:https://your-domain.com/api}
+
+gpt-sovits:
+  ref-audio:
+    upload-dir: /app/tts-ref/
+  seed-voice:
+    enabled: false
+
+app:
+  deploy:
+    host: ${APP_DEPLOY_HOST:https://your-domain.com}
+    code-output-dir: /opt/ai-backend/tmp/code_output
+    code-deploy-dir: /opt/ai-backend/tmp/code_deploy
+
+langchain4j:
+  open-ai:
+    streaming-chat-model:
+      base-url: ${CODEGEN_API_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+      api-key: ${CODEGEN_API_KEY}
+      model-name: ${CODEGEN_MODEL_NAME:deepseek-v3}
+
+knife4j:
+  enable: false

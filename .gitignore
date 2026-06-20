@@ -3,6 +3,12 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+/tmp/
+
+### Local secrets (never commit) ###
+src/main/resources/application-local.yml
+.env
+.env.*
 
 ### STS ###
 .apt_generated
@@ -32,3 +38,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Cursor / logs ###
+.cursor/
+hs_err_pid*.log
+replay_pid*.log

@@ -5,7 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
-import com.ai.constant.AppConstant;
+import com.ai.config.AppDeployProperties;
 import com.ai.core.AiCodeGeneratorFacade;
 import com.ai.exception.BusinessException;
 import com.ai.exception.ErrorCode;
@@ -48,6 +48,9 @@ public class AppServiceImpl extends ServiceImpl<com.ai.mapper.AppMapper, App> im
 
     @Resource
     private AiCodeGeneratorFacade aiCodeGeneratorFacade;
+
+    @Resource
+    private AppDeployProperties appDeployProperties;
 
     @Resource
     private ChatHistoryService chatHistoryService;
@@ -355,14 +358,14 @@ public class AppServiceImpl extends ServiceImpl<com.ai.mapper.AppMapper, App> im
         // 5. 获取代码生成类型，构建源目录路径
         String codeGenType = app.getCodeGenType();
         String sourceDirName = codeGenType + "_" + appId;
-        String sourceDirPath = AppConstant.CODE_OUTPUT_ROOT_DIR + File.separator + sourceDirName;
+        String sourceDirPath = appDeployProperties.resolveCodeOutputDir() + File.separator + sourceDirName;
         // 6. 检查源目录是否存在
         File sourceDir = new File(sourceDirPath);
         if (!sourceDir.exists() || !sourceDir.isDirectory()) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "应用代码不存在，请先生成代码");
         }
         // 7. 复制文件到部署目录
-        String deployDirPath = AppConstant.CODE_DEPLOY_ROOT_DIR + File.separator + deployKey;
+        String deployDirPath = appDeployProperties.resolveCodeDeployDir() + File.separator + deployKey;
         try {
             FileUtil.copyContent(sourceDir, new File(deployDirPath), true);
         } catch (Exception e) {
@@ -376,7 +379,8 @@ public class AppServiceImpl extends ServiceImpl<com.ai.mapper.AppMapper, App> im
         boolean updateResult = this.updateById(updateApp);
         ThrowUtils.throwIf(!updateResult, ErrorCode.OPERATION_ERROR, "更新应用部署信息失败");
         // 9. 返回可访问的 URL
-        return String.format("%s/%s/", AppConstant.CODE_DEPLOY_HOST, deployKey);
+        String host = appDeployProperties.getHost().replaceAll("/+$", "");
+        return String.format("%s/%s/", host, deployKey);
     }
 
     /**

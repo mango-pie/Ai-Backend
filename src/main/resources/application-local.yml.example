@@ -1,0 +1,32 @@
+# 本地开发密钥模板 — 复制为 application-local.yml 后填入真实值（该文件已被 git 忽略）
+
+langchain4j:
+  open-ai:
+    streaming-chat-model:
+      api-key: your-codegen-api-key
+    chat-model:
+      api-key: your-dashscope-api-key
+    agent-chat-model:
+      api-key: your-dashscope-api-key
+
+chat:
+  image-caption:
+    api-key: your-dashscope-api-key
+
+astrbot:
+  base-url: http://your-astrbot-host:6185
+  api-key: your-astrbot-api-key
+
+spring:
+  datasource:
+    password: your-db-password
+
+# 可选：Windows 本地上传路径
+upload:
+  path: E:/app/uploads/
+
+gpt-sovits:
+  seed-voice:
+    enabled: true
+    ref-audio-path: E:/path/to/ref.wav
+    prompt-text: 参考音频对应文本

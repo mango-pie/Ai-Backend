@@ -1,0 +1,60 @@
+package com.ai.agent.registry;
+
+import jakarta.annotation.PostConstruct;
+import lombok.Getter;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@Component
+public class AgentToolRegistry {
+
+    private final List<AgentToolModule> modules;
+
+    @Getter
+    private List<AgentToolDefinition> definitions = List.of();
+
+    @Getter
+    private List<String> moduleNames = List.of();
+
+    private Map<String, AgentToolDefinition> definitionByName = Map.of();
+
+    public AgentToolRegistry(List<AgentToolModule> modules) {
+        this.modules = modules == null ? List.of() : modules;
+    }
+
+    @PostConstruct
+    void init() {
+        List<AgentToolDefinition> collected = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        Map<String, AgentToolDefinition> byName = new LinkedHashMap<>();
+        for (AgentToolModule module : modules) {
+            names.add(module.moduleName());
+            AgentToolRegistryBuilder builder = new AgentToolRegistryBuilder(module.moduleName());
+            module.registerTools(builder);
+            for (AgentToolDefinition definition : builder.buildDefinitions()) {
+                if (byName.containsKey(definition.name())) {
+                    throw new IllegalStateException("Duplicate agent tool name: " + definition.name());
+                }
+                byName.put(definition.name(), definition);
+                collected.add(definition);
+            }
+        }
+        this.definitions = List.copyOf(collected);
+        this.moduleNames = List.copyOf(names);
+        this.definitionByName = Collections.unmodifiableMap(byName);
+    }
+
+    public Optional<AgentToolDefinition> find(String name) {
+        return Optional.ofNullable(definitionByName.get(name));
+    }
+
+    public List<dev.langchain4j.agent.tool.ToolSpecification> toolSpecifications() {
+        return definitions.stream().map(AgentToolDefinition::specification).toList();
+    }
+}

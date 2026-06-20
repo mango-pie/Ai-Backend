@@ -97,13 +97,13 @@ public class ChatHistoryServiceImpl extends ServiceImpl<ChatHistoryMapper, ChatH
     @Override
     public Page<ChatHistoryVO> listChatHistoryByPage(ChatHistoryQueryRequest chatHistoryQueryRequest, Long appId, Long userId, boolean isAdmin) {
         QueryWrapper queryWrapper = getQueryWrapper(chatHistoryQueryRequest);
-        queryWrapper.where(ChatHistory::getAppId).eq(appId);
+        queryWrapper.and("appId = ?", appId);
         // 非管理员只能查看自己的对话历史
         if (!isAdmin) {
-            queryWrapper.where(ChatHistory::getUserId).eq(userId);
+            queryWrapper.and("userId = ?", userId);
         }
         // 按创建时间降序排序
-        queryWrapper.orderBy(ChatHistory::getCreateTime).desc();
+        queryWrapper.orderBy("createTime", false);
         Page<ChatHistory> page = page(new Page<>(chatHistoryQueryRequest.getPageNum(), chatHistoryQueryRequest.getPageSize()), queryWrapper);
         Page<ChatHistoryVO> resultPage = new Page<>(page.getPageNumber(), page.getPageSize(), page.getTotalRow());
         resultPage.setRecords(getChatHistoryVOList(page.getRecords()));
@@ -124,8 +124,8 @@ public class ChatHistoryServiceImpl extends ServiceImpl<ChatHistoryMapper, ChatH
     @Override
     public List<ChatHistoryVO> getLatestChatHistory(Long appId, Integer limit) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.where(ChatHistory::getAppId).eq(appId);
-        queryWrapper.orderBy(ChatHistory::getCreateTime).desc();
+        queryWrapper.where("appId = ?", appId);
+        queryWrapper.orderBy("createTime", false);
         queryWrapper.limit(limit);
         List<ChatHistory> chatHistoryList = list(queryWrapper);
         // 反转列表，使最早的消息在前
