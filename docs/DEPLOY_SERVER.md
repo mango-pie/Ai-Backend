@@ -290,6 +290,7 @@ sudo systemctl reload nginx
 | 6 | 聊天 SSE | 发送一条 AI 消息 | 流式输出 |
 | 7 | 图片上传 | 博客/聊天上传图片 | 可访问 `/api/uploads/...` |
 | 8 | AI 实验室 | 生成并部署小应用 | 返回 `http://SERVER_IP/{key}/` 可打开 |
+| 9 | 音乐播放器 | 搜索并播放（需附录 D） | 有结果、可播放 |
 
 ---
 
@@ -331,6 +332,7 @@ mysql -u ${DB_USER} -p${DB_PASSWORD} ${DB_NAME} < 新脚本.sql
 | 上传 404 | `ls -la /app/uploads`；权限应为 `www-data` |
 | 部署链接 404 | `ls ${APP_ROOT}/tmp/code_deploy/`；Nginx deployKey location 是否生效 |
 | MySQL 连接失败 | `mysql -u aiscene -p`；检查 `DB_PASSWORD` 与 systemd EnvironmentFile |
+| 音乐播放器不可用 | 见附录 D.7；`systemctl status netease-api` |
 
 ---
 
@@ -366,19 +368,128 @@ sudo certbot --nginx -d your-domain.com
 - 前端 `.env.production` 重新 build 并上传
 - `systemctl restart ai-backend`
 
-## 附录 B：不部署的功能
+## 附录 B：不部署 / 可选的功能
 
 | 功能 | 说明 |
 |------|------|
 | GPT-SoVITS TTS | 2GB 不建议，`GPT_SOVITS_SEED_ENABLED=false` |
-| 网易云 api-enhanced | 需额外 Node 进程，生产 Nginx 未配置 `/netease-api` |
+| 网易云 api-enhanced | 可选，见附录 D；约 100～200MB 内存 |
 
 ## 附录 C：配置文件路径速查
 
 | 文件 | 仓库路径 |
 |------|----------|
 | Nginx 模板 | `deploy/nginx/ai-site.conf` |
-| systemd 模板 | `deploy/systemd/ai-backend.service` |
+| systemd 后端 | `deploy/systemd/ai-backend.service` |
+| systemd 网易云 | `deploy/systemd/netease-api.service` |
 | 环境变量模板 | `deploy/env/ai-backend.env.example` |
 | 生产 Spring 配置 | `src/main/resources/application-prod.yml` |
 | SQL 脚本 | `src/main/resources/sql/` |
+
+## 附录 D：网易云 api-enhanced（可选，2GB 谨慎启用）
+
+> **内存**：Node 进程约 **100～200MB**。2GB 全栈已跑 MySQL + Spring Boot 时偏紧，务必已配置 **2GB Swap**（第 1 步）。  
+> **无需 API Key**：该服务是网易云接口代理。  
+> **前端依赖**：悬浮播放器 `FloatingPlayer` 请求 `/netease-api`，封面走 `/netease-img`。
+
+### D.1 是否值得部署
+
+| 情况 | 建议 |
+|------|------|
+| 仅个人听歌、服务器已开 Swap | 可同机部署 |
+| AI 聊天 + 代码生成经常同时用 | 暂缓，或外置到别的机器 |
+| 不需要底部音乐播放器 | 跳过本节 |
+
+### D.2 安装 Node.js（Ubuntu）
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+node -v   # v20.x
+npm -v
+```
+
+### D.3 部署 api-enhanced
+
+源码在前端仓库 `AI-frontend/api-enhanced/`（本仓库 `.gitignore` 未包含时，从本机 scp 或单独拷贝）。
+
+```bash
+sudo mkdir -p /opt/netease-api
+sudo chown -R $USER:$USER /opt/netease-api
+
+# 方式 A：从本机 scp
+# scp -r AI-frontend/api-enhanced/* ${DEPLOY_USER}@${SERVER_IP}:/opt/netease-api/
+
+# 方式 B：服务器上若 Ai-frontend 仓库含该目录
+cd /tmp && git clone https://github.com/mango-pie/Ai-frontend.git
+sudo rsync -a Ai-frontend/AI-frontend/api-enhanced/ /opt/netease-api/
+cd /opt/netease-api
+npm ci --omit=dev
+```
+
+验证启动：
+
+```bash
+cd /opt/netease-api
+PORT=3000 node app.js
+# 另开终端：curl -s "http://127.0.0.1:3000/search?keywords=test" | head -c 200
+# Ctrl+C 后改由 systemd 托管
+```
+
+### D.4 systemd 服务
+
+```bash
+sudo cp /tmp/Ai-Backend/deploy/systemd/netease-api.service /etc/systemd/system/
+sudo chown -R www-data:www-data /opt/netease-api
+sudo systemctl daemon-reload
+sudo systemctl enable netease-api
+sudo systemctl start netease-api
+sudo systemctl status netease-api
+journalctl -u netease-api -f --no-pager
+```
+
+服务模板见 [`deploy/systemd/netease-api.service`](../deploy/systemd/netease-api.service)（含 `NODE_OPTIONS=--max-old-space-size=128`）。
+
+### D.5 Nginx 反代
+
+[`deploy/nginx/ai-site.conf`](../deploy/nginx/ai-site.conf) 已包含 `/netease-api/` 与 `/netease-img/`。若已部署过旧版 Nginx 配置，请合并后：
+
+```bash
+sudo cp /tmp/Ai-Backend/deploy/nginx/ai-site.conf /etc/nginx/sites-available/ai-site.conf
+sudo sed -i "s/SERVER_IP/${SERVER_IP}/g" /etc/nginx/sites-available/ai-site.conf
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+前端 `neteaseMusic.ts` 使用相对路径 `/netease-api`，**无需**修改 `VITE_*` 环境变量。
+
+### D.6 验收
+
+| # | 操作 | 期望 |
+|---|------|------|
+| 1 | `curl -s "http://SERVER_IP/netease-api/search?keywords=晴天" \| head -c 300` | 返回 JSON |
+| 2 | 浏览器打开站点，底部播放器搜索 | 有结果、可播放 |
+| 3 | `free -h` | 可用内存仍 > 200MB 或 Swap 未打满 |
+
+### D.7 故障排查
+
+| 现象 | 处理 |
+|------|------|
+| 播放器提示「请确认 netease-api 已启动」 | `systemctl status netease-api`；`curl http://127.0.0.1:3000/search?keywords=a` |
+| 502 on `/netease-api` | Nginx 是否 reload；`ss -tlnp \| grep 3000` |
+| 封面不显示 | 检查 `/netease-img/` 反代 |
+| 进程被 Kill | 确认 Swap；或调低 `NODE_OPTIONS=--max-old-space-size=96` |
+| 灰色歌曲无法播放 | 网易策略限制，属 api-enhanced 能力边界 |
+
+### D.8 外置部署（更省 2GB 内存）
+
+将 api-enhanced 跑在另一台机器时，Nginx 中改为：
+
+```nginx
+location /netease-api/ {
+    proxy_pass http://OTHER_HOST:3000/;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_read_timeout 60s;
+}
+```

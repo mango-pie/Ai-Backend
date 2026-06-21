@@ -13,7 +13,8 @@
 |------|------|
 | 完整部署手册 | [docs/DEPLOY_SERVER.md](docs/DEPLOY_SERVER.md) |
 | Nginx 配置模板 | [deploy/nginx/ai-site.conf](deploy/nginx/ai-site.conf) |
-| systemd 服务模板 | [deploy/systemd/ai-backend.service](deploy/systemd/ai-backend.service) |
+| systemd 后端 | [deploy/systemd/ai-backend.service](deploy/systemd/ai-backend.service) |
+| systemd 网易云（可选） | [deploy/systemd/netease-api.service](deploy/systemd/netease-api.service) |
 | 环境变量模板 | [deploy/env/ai-backend.env.example](deploy/env/ai-backend.env.example) |
 | SQL 脚本 | [src/main/resources/sql/](src/main/resources/sql/) |
 
